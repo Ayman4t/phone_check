@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PhoneCheck | فاحص الأجهزة المستعملة — افحص الموبايل في دقيقة</title>
+  <meta name="description" content="أداة مجانية تعمل بالكامل داخل متصفحك لفحص الموبايلات المستعملة قبل الشراء: البكسلات الميتة، اللمس، الصوت، الميكروفون، الاهتزاز وقائمة فحص يدوي.">
+  <meta name="theme-color" content="#0b0f14">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- ===== Sticky top bar: brand + overall progress ===== -->
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <img src="icon.svg" alt="" width="28" height="28">
+        <span>PhoneCheck <small>· فاحص الأجهزة المستعملة</small></span>
+      </div>
+      <div class="progress" id="progress" role="progressbar" aria-label="تقدم الفحص"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-fill" id="bar-fill"></div>
+      </div>
+      <div class="progress-meta"><span id="pct">0%</span><span id="count">0 / 14</span></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ===== Hero / quick instructions ===== -->
+    <section class="hero">
+      <h1>افحص الموبايل في دقيقة قبل ما تشتري</h1>
+      <p>كل الفحوصات بتشتغل جوه متصفحك على الموبايل نفسه — مفيش بيانات بتتبعت لأي مكان.</p>
+      <ol class="quick">
+        <li>اطلب من البايع يسيبك تفحص الجهاز قبل الدفع.</li>
+        <li>افتح الصفحة دي من متصفح الموبايل اللي هتشتريه.</li>
+        <li>اضغط على كل فحص ثم سجّل النتيجة، وكمّل القائمة اليدوية.</li>
+      </ol>
+    </section>
+
+    <!-- ===== Diagnostic modules ===== -->
+    <section aria-labelledby="h-tests">
+      <h2 id="h-tests">الفحوصات التقنية</h2>
+      <div class="cards">
+        <button class="card" type="button" data-test="pixel">
+          <span class="card-icon" aria-hidden="true">🖥️</span>
+          <span class="card-body"><strong>فحص البكسلات الميتة</strong><small>ألوان كاملة الشاشة: أسود، أبيض، أحمر، أخضر، أزرق</small></span>
+          <span class="badge" data-badge="pixel">لم يُفحص</span>
+        </button>
+        <button class="card" type="button" data-test="grid">
+          <span class="card-icon" aria-hidden="true">🟩</span>
+          <span class="card-body"><strong>مناطق اللمس الميتة</strong><small>اسحب إصبعك لتلوين الشبكة كلها بالأخضر</small></span>
+          <span class="badge" data-badge="grid">لم يُفحص</span>
+        </button>
+        <button class="card" type="button" data-test="multi">
+          <span class="card-icon" aria-hidden="true">🖐️</span>
+          <span class="card-body"><strong>اللمس المتعدد</strong><small>عدّاد لحظي لعدد الأصابع على الشاشة</small></span>
+          <span class="badge" data-badge="multi">لم يُفحص</span>
+        </button>
+        <button class="card" type="button" data-test="audio">
+          <span class="card-icon" aria-hidden="true">🔊</span>
+          <span class="card-body"><strong>الصوت والسماعات</strong><small>باص 100Hz، صوت 1kHz، حاد 10kHz + يسار/يمين</small></span>
+          <span class="badge" data-badge="audio">لم يُفحص</span>
+        </button>
+        <button class="card" type="button" data-test="mic">
+          <span class="card-icon" aria-hidden="true">🎙️</span>
+          <span class="card-body"><strong>الميكروفون</strong><small>موجة صوتية حية على الشاشة</small></span>
+          <span class="badge" data-badge="mic">لم يُفحص</span>
+        </button>
+        <button class="card" type="button" data-test="vibe">
+          <span class="card-icon" aria-hidden="true">📳</span>
+          <span class="card-body"><strong>الاهتزاز</strong><small>نمط اهتزاز قصير – طويل</small></span>
+          <span class="badge" data-badge="vibe">لم يُفحص</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== Physical & security checklist ===== -->
+    <section aria-labelledby="h-check">
+      <h2 id="h-check">القائمة اليدوية: الفحص الفيزيائي والأمان</h2>
+      <p class="muted">علّم على كل بند بعد ما تفحصه بنفسك (حتى لو لقيت فيه مشكلة — المهم إنك راجعته).</p>
+      <ul class="checklist">
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="battery"><span class="check-title">🔋 صحة البطارية</span></label>
+          <details>
+            <summary>طريقة الفحص والحدود المقبولة</summary>
+            <div class="check-body">
+              <p><strong>آيفون:</strong> الإعدادات ← البطارية ← صحة البطارية والشحن.</p>
+              <ul>
+                <li>فوق 85%: ممتاز.</li>
+                <li>من 80% إلى 85%: مقبول.</li>
+                <li>تحت 80%: محتاجة تبديل — اخصم التكلفة من السعر.</li>
+                <li>لو ظهرت رسالة «قطعة غير أصلية» أو «صيانة» فالبطارية اتغيرت أو فيها مشكلة.</li>
+              </ul>
+              <p><strong>أندرويد:</strong> الإعدادات ← البطارية ← حالة/صحة البطارية (متاحة في أجهزة مثل Pixel وسامسونج One UI 6.1 وما بعده). لو مش موجودة، استخدم تطبيق الشركة المصنّعة (مثل Samsung Members). فوق 80% من السعة الأصلية يعتبر مقبول.</p>
+              <p>لاحظ كمان: سخونة غير طبيعية أثناء الشحن أو نزول سريع للنسبة.</p>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="imei"><span class="check-title">🔢 مطابقة رقم IMEI</span></label>
+          <details>
+            <summary>إزاي تتأكد</summary>
+            <div class="check-body">
+              <ol>
+                <li>افتح تطبيق الاتصال واطلب <code dir="ltr">*#06#</code> — هيظهر رقم/رقمين IMEI (الجهاز ثنائي الشريحة له رقمان).</li>
+                <li>قارنه بالمطبوع على صينية الشريحة وعلى علبة الجهاز وبالمكتوب في الإعدادات ← حول الهاتف.</li>
+                <li>أي اختلاف = احتمال قطع مبدّلة أو جهاز مشبوه، فاتجنب الشراء.</li>
+                <li>اتأكد إن الجهاز مش مبلّغ عنه كمسروق، وإن حالة تسجيله لدى الجهة المنظمة للاتصالات في بلدك سليمة عشان ما يتقفلش عليك.</li>
+              </ol>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="cloud"><span class="check-title">☁️ إزالة حساب المالك (iCloud / Google FRP)</span></label>
+          <details>
+            <summary>أهم نقطة قبل الدفع</summary>
+            <div class="check-body">
+              <p><strong>آيفون:</strong> الإعدادات ← اضغط على الاسم في الأعلى. لازم يكون الجهاز خارج حساب المالك (Find My متوقف). الأفضل تعمل «مسح كل المحتوى والإعدادات» قدام البايع وتتأكد إن الجهاز بعد التشغيل ما بيطلب Apple ID سابق (قفل التفعيل).</p>
+              <p><strong>أندرويد:</strong> الإعدادات ← الحسابات: احذف حساب جوجل أو اعمل Factory Reset قدام البايع، وتأكد إن شاشة الإعداد ما بتطلب حساب سابق (حماية FRP).</p>
+              <p>اتأكد كمان إن الجهاز مش تحت «إدارة الجهاز/MDM» لشركة، ومش مقفول على شبكة معينة.</p>
+              <p class="warn">لو الجهاز لسه عليه حساب البايع ورفض يخرج منه — لا تشتري.</p>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="camera"><span class="check-title">📷 تركيز الكاميرا والفلاش</span></label>
+          <details>
+            <summary>إزاي تفحص الكاميرات</summary>
+            <div class="check-body">
+              <ul>
+                <li>جرّب الكاميرا الخلفية والأمامية، صورة وفيديو.</li>
+                <li>اضغط على جسم قريب ثم بعيد: التركيز لازم يتغير بسرعة بدون اهتزاز أو طنين.</li>
+                <li>جرّب كل العدسات (واسعة/تيلي)، الزوم، والفلاش.</li>
+                <li>راجع الصور: بقع ثابتة أو ضبابية = مشكلة في العدسة أو الحساس.</li>
+              </ul>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="lens"><span class="check-title">🔍 نظافة وسلامة العدسات</span></label>
+          <details>
+            <summary>الغبار والرطوبة</summary>
+            <div class="check-body">
+              <ul>
+                <li>افحص زجاج العدسة: شروخ أو خدوش؟</li>
+                <li>دوّر على غبار أو بخار رطوبة <em>داخل</em> العدسة.</li>
+                <li>صوّر ورقة بيضاء وشوف لو في بقع تظهر في نفس المكان بكل الصور.</li>
+              </ul>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="port"><span class="check-title">🔌 منفذ الشحن</span></label>
+          <details>
+            <summary>الوبر والصدأ والتثبيت</summary>
+            <div class="check-body">
+              <ul>
+                <li>نوّر بكشاف على المنفذ: وبر، تراب، صدأ أو أطراف مثنية؟</li>
+                <li>جرّب شاحن وكابل: الشحن لازم يبدأ فوراً ويفضل ثابت لما تحرك الكابل بلطف.</li>
+                <li>جرّب منفذ السماعة (لو موجود).</li>
+              </ul>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="buttons"><span class="check-title">👆 الأزرار والبصمة والحساسات</span></label>
+          <details>
+            <summary>اللي لازم تجرّبه</summary>
+            <div class="check-body">
+              <ul>
+                <li>أزرار الطاقة والصوت ومفتاح الصامت.</li>
+                <li>بصمة الإصبع أو Face ID.</li>
+                <li>Wi-Fi وBluetooth وشريحتك وGPS.</li>
+                <li>اتصل بحد: سماعة المكالمات والميكروفون وحساس القرب (الشاشة تنطفي).</li>
+                <li>تدوير الشاشة التلقائي.</li>
+              </ul>
+            </div>
+          </details>
+        </li>
+
+        <li class="check">
+          <label class="check-head"><input type="checkbox" data-check="body"><span class="check-title">📱 الهيكل والشاشة (فحص بالعين)</span></label>
+          <details>
+            <summary>علامات الفتح والمياه</summary>
+            <div class="check-body">
+              <ul>
+                <li>شروخ، انبعاجات، فجوات غير متساوية بين الإطار والشاشة.</li>
+                <li>براغي مخدوشة أو ناقصة = الجهاز اتفتح قبل كده.</li>
+                <li>مؤشر السوائل داخل صينية الشريحة (في الأجهزة اللي فيها).</li>
+                <li>ظلال أو حروق على الشاشة (Burn-in) أو خطوط أو تغيّر في اللون.</li>
+              </ul>
+            </div>
+          </details>
+        </li>
+
+      </ul>
+    </section>
+
+    <!-- ===== Final summary (shown at 100%) ===== -->
+    <section class="summary" id="summary" hidden aria-live="polite">
+      <h2>ملخص الفحص</h2>
+      <div id="summary-body"></div>
+    </section>
+
+    <div class="reset-row">
+      <button class="btn btn-ghost" type="button" id="reset">↺ إعادة الفحص من الأول</button>
+    </div>
+
+    <!-- ===== Informational content ===== -->
+    <section class="info">
+      <h2>ليه الفحص قبل الشراء مهم؟</h2>
+      <p>سوق الموبايلات المستعملة فيه أجهزة بشاشات مبدّلة أو بطاريات ضعيفة أو حسابات مقفولة. فحص بسيط لمدة دقيقة قدام البايع بيوفر عليك مشاكل وفلوس. الأداة دي بتغطي اللي المتصفح يقدر يفحصه (الشاشة، اللمس، الصوت، الميكروفون، الاهتزاز)، والقائمة اليدوية بتغطي اللي لازم تتأكد منه بعينك من إعدادات الجهاز.</p>
+    </section>
+
+  </main>
+
+  <!-- ===== Footer (AdSense-friendly compliance links) ===== -->
+  <footer class="footer">
+    <div class="wrap">
+      <nav aria-label="روابط الموقع">
+        <a href="#privacy" data-legal="privacy">Privacy Policy · سياسة الخصوصية</a>
+        <a href="#terms" data-legal="terms">Terms of Use · شروط الاستخدام</a>
+        <a href="#about" data-legal="about">About Tool · عن الأداة</a>
+      </nav>
+      <p class="muted">© <span id="year">2026</span> PhoneCheck — النتائج إرشادية ولا تغني عن فحص فني متخصص.</p>
+    </div>
+  </footer>
+
+  <!-- Full-screen test layer (pixel / grid / multi-touch) -->
+  <div class="overlay" id="overlay" hidden></div>
+
+  <!-- Bottom sheet (audio / mic / vibration / results / legal pages) -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-head">
+        <h2 id="sheet-title"></h2>
+        <button class="icon-btn" type="button" id="sheet-close" aria-label="إغلاق">✕</button>
+      </div>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

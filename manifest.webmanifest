@@ -1,0 +1,16 @@
+{
+  "name": "PhoneCheck — فاحص الأجهزة المستعملة",
+  "short_name": "PhoneCheck",
+  "description": "افحص الموبايل المستعمل في دقيقة قبل ما تشتري",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0f14",
+  "theme_color": "#0b0f14",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
