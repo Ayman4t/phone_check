@@ -245,3 +245,9 @@ summary { color: var(--accent); cursor: pointer; font-size: .9rem; padding: 4px 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+
+.sensor-status{color:var(--muted)}
+.sensor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}.sensor-grid>div{display:grid;gap:3px;text-align:center;padding:12px 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px}.sensor-grid strong{color:var(--accent);font-size:1.1rem}.sensor-grid span{direction:ltr;font-variant-numeric:tabular-nums}
+.refresh-value{display:grid;place-items:center;min-height:120px;margin:4px 0;font-size:clamp(3rem,15vw,5rem);font-weight:800;line-height:1;color:var(--accent);background:var(--surface-2);border:1px solid var(--border);border-radius:16px;font-variant-numeric:tabular-nums}
+.camera-preview{width:100%;aspect-ratio:4/3;display:block;object-fit:cover;background:#05080b;border:1px solid var(--border);border-radius:14px}.btn:disabled{opacity:.45;cursor:not-allowed}@media(max-width:380px){.sensor-grid{grid-template-columns:1fr}}

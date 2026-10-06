@@ -8,7 +8,7 @@
  *  2. UI rendering (badges, progress, summary)
  *  3. bottom sheet + result prompt
  *  4. full-screen overlay tests: pixel / grid / multi-touch
- *  5. sheet tests: audio / microphone / vibration
+ *  5. sheet tests: audio / microphone / vibration / gyroscope / refresh rate / camera
  *  6. legal pages (Privacy / Terms / About)
  *  7. init
  */
@@ -41,7 +41,10 @@
     multi: { title: 'فحص اللمس المتعدد' },
     audio: { title: 'فحص الصوت والسماعات' },
     mic:   { title: 'فحص الميكروفون' },
-    vibe:  { title: 'فحص الاهتزاز' }
+    vibe:  { title: 'فحص الاهتزاز' },
+    gyro:  { title: 'فحص الجيروسكوب' },
+    refresh: { title: 'فحص معدل تحديث الشاشة' },
+    camera: { title: 'فحص الكاميرا' }
   };
   const MODULE_KEYS = Object.keys(MODULES);
   const STATUS_LABEL = { pass: 'سليم ✓', fail: 'مشكلة ✗', skip: 'تم التخطي' };
@@ -632,6 +635,67 @@
     ], () => { try { navigator.vibrate(0); } catch (_) { /* ignore */ } });
   }
 
+  /* ---------- 5d. Gyroscope ---------- */
+  function openGyro() {
+    let running = false, fallback = false;
+    const support = 'DeviceMotionEvent' in window || 'DeviceOrientationEvent' in window;
+    const status = h('p', { class: 'sensor-status', text: 'اضغط «ابدأ» وحرّك الجهاز ببطء في كل الاتجاهات.' });
+    const values = h('div', { class: 'sensor-grid' },
+      h('div', {}, h('strong', { text: 'α' }), h('span', { text: '0°/s', id: 'gyro-alpha' })),
+      h('div', {}, h('strong', { text: 'β' }), h('span', { text: '0°/s', id: 'gyro-beta' })),
+      h('div', {}, h('strong', { text: 'γ' }), h('span', { text: '0°/s', id: 'gyro-gamma' }))
+    );
+    const startBtn = h('button', { class: 'btn btn-primary', type: 'button', text: '🧭 ابدأ الاختبار' });
+    const setText = (a,b,c) => { $('#gyro-alpha').textContent=a; $('#gyro-beta').textContent=b; $('#gyro-gamma').textContent=c; };
+    const onMotion = e => { const r=e.rotationRate; if(!r)return; setText((Number(r.alpha)||0).toFixed(1)+'°/s',(Number(r.beta)||0).toFixed(1)+'°/s',(Number(r.gamma)||0).toFixed(1)+'°/s'); };
+    const onOrientation = e => { if(!fallback)return; setText((Number(e.alpha)||0).toFixed(0)+'°',(Number(e.beta)||0).toFixed(0)+'°',(Number(e.gamma)||0).toFixed(0)+'°'); };
+    async function start(){
+      if(!support){ status.textContent='الجهاز أو المتصفح لا يوفّر مستشعر الحركة عبر الويب.'; return; }
+      try {
+        if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+          const permission=await DeviceMotionEvent.requestPermission();
+          if(permission!=='granted'){ status.textContent='لم يتم السماح بالوصول إلى مستشعر الحركة.'; return; }
+        }
+        fallback=!('DeviceMotionEvent' in window);
+        window.addEventListener('devicemotion',onMotion,true); window.addEventListener('deviceorientation',onOrientation,true);
+        running=true; status.textContent=fallback?'وضع التوافق: حرّك الجهاز وشاهد زوايا الاتجاه α β γ.':'المستشعر يعمل — حرّك الجهاز ببطء وستتغير قيم السرعة الزاوية.'; startBtn.textContent='⏹ إيقاف الاختبار';
+      } catch(_){ status.textContent='تعذر تشغيل مستشعر الحركة. تأكد من HTTPS ومنح الإذن.'; }
+    }
+    function stop(){ window.removeEventListener('devicemotion',onMotion,true); window.removeEventListener('deviceorientation',onOrientation,true); running=false; startBtn.textContent='🧭 ابدأ الاختبار'; }
+    startBtn.addEventListener('click',()=>running?stop():start());
+    openSheet(MODULES.gyro.title,[h('p',{text:'اختبار الجيروسكوب يقيس استجابة مستشعر الحركة. على بعض أجهزة iPhone قد يطلب Safari إذناً بعد الضغط على ابدأ.'}),values,status,startBtn,h('p',{class:'muted',text:'ملاحظة: بعض المتصفحات لا تعرض السرعة الزاوية الخام؛ في هذه الحالة نستخدم اتجاه الجهاز كاختبار توافق بديل.'}),h('p',{class:'group-title',text:'إيه نتيجة الفحص؟'}),resultButtons('gyro')],stop);
+  }
+
+  /* ---------- 5e. Refresh rate ---------- */
+  function openRefresh() {
+    let running=false, raf=0, start=0, last=0, samples=[];
+    const value=h('div',{class:'refresh-value',text:'—'});
+    const detail=h('p',{class:'sensor-status',text:'اضغط «ابدأ» لقياس معدل الإطارات الفعلي لمدة ثانيتين.'});
+    const startBtn=h('button',{class:'btn btn-primary',type:'button',text:'📈 ابدأ القياس'});
+    function frame(ts){
+      if(!running)return; if(!start)start=ts; if(last){const dt=ts-last;if(dt>0&&dt<100)samples.push(1000/dt);} last=ts;
+      if(ts-start>=2000){const sorted=samples.slice().sort((a,b)=>a-b),trim=sorted.length>20?sorted.slice(Math.floor(sorted.length*.1),Math.ceil(sorted.length*.9)):sorted;const avg=trim.length?trim.reduce((a,b)=>a+b,0)/trim.length:0;value.textContent=Math.round(avg*10)/10+' Hz';detail.textContent='تم القياس من requestAnimationFrame. النتيجة تقريبية وتتأثر بالأداء والحرارة ووضع توفير الطاقة.';running=false;startBtn.textContent='🔄 قياس مرة أخرى';return;} raf=requestAnimationFrame(frame);
+    }
+    function measure(){cancelAnimationFrame(raf);running=true;start=0;last=0;samples=[];value.textContent='…';detail.textContent='جارٍ القياس — لا تغلق الصفحة ولا تلمس الشاشة.';startBtn.textContent='⏱️ جارٍ القياس…';raf=requestAnimationFrame(frame);}
+    startBtn.addEventListener('click',measure);
+    openSheet(MODULES.refresh.title,[h('p',{text:'الاختبار يحسب عدد الإطارات التي يستطيع المتصفح رسمها في الثانية. قد ترى 60Hz أو 90Hz أو 120Hz أو رقماً قريباً منها.'}),value,detail,startBtn,h('p',{class:'group-title',text:'إيه نتيجة الفحص؟'}),resultButtons('refresh')],()=>{running=false;cancelAnimationFrame(raf);});
+  }
+
+  /* ---------- 5f. Camera ---------- */
+  function openCamera() {
+    let stream=null, facing='environment';
+    const video=h('video',{class:'camera-preview',autoplay:'',playsinline:'',muted:'','aria-label':'معاينة الكاميرا'});
+    const status=h('p',{class:'sensor-status',text:'اضغط «تشغيل الكاميرا» واسمح للمتصفح باستخدام الكاميرا.'});
+    const startBtn=h('button',{class:'btn btn-primary',type:'button',text:'📷 تشغيل الكاميرا'});
+    const switchBtn=h('button',{class:'btn',type:'button',text:'🔄 تبديل أمامية / خلفية',disabled:'disabled'});
+    async function startCamera(){
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){status.textContent='المتصفح لا يدعم الكاميرا عبر الويب.';return;}
+      try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1920},height:{ideal:1080}},audio:false});video.srcObject=stream;await video.play().catch(()=>{});switchBtn.disabled=false;startBtn.textContent='⏹ إيقاف الكاميرا';status.textContent=facing==='environment'?'الكاميرا الخلفية تعمل. جرّب التركيز والتفاصيل والضوء.':'الكاميرا الأمامية تعمل. جرّب التركيز والوجه والحواف.';}catch(err){status.textContent=err&&err.name==='NotAllowedError'?'تم رفض إذن الكاميرا. اسمح بالكاميرا من إعدادات المتصفح ثم جرّب مرة أخرى.':'تعذر تشغيل الكاميرا. تأكد أن الصفحة تعمل عبر HTTPS وأن الكاميرا غير مستخدمة في تطبيق آخر.';}}
+    function stopCamera(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}video.srcObject=null;switchBtn.disabled=true;startBtn.textContent='📷 تشغيل الكاميرا';}
+    startBtn.addEventListener('click',()=>stream?stopCamera():startCamera());switchBtn.addEventListener('click',()=>{facing=facing==='environment'?'user':'environment';startCamera();});
+    openSheet(MODULES.camera.title,[h('p',{text:'اختبر الصورة الحية، التركيز، الألوان، البقع، والزوم/العدسات المتاحة على الجهاز. الكاميرا لا تُسجّل ولا تُرفع لأي خادم.'}),video,status,h('div',{class:'btn-row'},startBtn,switchBtn),h('p',{class:'group-title',text:'بعد تشغيل الكاميرا'}),h('ul',{},[h('li',{text:'وجّه الكاميرا لشيء قريب ثم بعيد وتأكد أن التركيز يتغير.'}),h('li',{text:'جرّب كل العدسات والزوم من تطبيق الكاميرا الأصلي أيضاً.'}),h('li',{text:'ابحث عن بقع ثابتة أو خطوط أو اهتزاز غير طبيعي في الصورة.'})]),h('p',{class:'group-title',text:'إيه نتيجة الفحص؟'}),resultButtons('camera')],stopCamera);
+  }
+
   /* ======================================================
    * 6. Legal pages (needed for AdSense review)
    * ==================================================== */
@@ -684,6 +748,9 @@
           'الصوت والسماعات (ترددات واستريو)',
           'الميكروفون بموجة صوتية حية',
           'الاهتزاز',
+          'الجيروسكوب ومستشعر الحركة',
+          'معدل تحديث الشاشة',
+          'الكاميرا ومعاينة العدسات',
           'قائمة يدوية للبطارية وIMEI وحساب المالك والكاميرا والمنفذ والهيكل'
         ]],
         ['h', 'حدود الأداة'],
@@ -712,7 +779,10 @@
     multi: () => startOverlay('multi', runMulti),
     audio: openAudio,
     mic:   openMic,
-    vibe:  openVibe
+    vibe:  openVibe,
+    gyro:  openGyro,
+    refresh: openRefresh,
+    camera: openCamera
   };
 
   function init() {
